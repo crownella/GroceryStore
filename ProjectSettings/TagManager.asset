@@ -3,7 +3,14 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Aisle 1
+  - Aisle 2
+  - Aisle 3
+  - Aisle 4
+  - Aisle 5
+  - Aisle 6
+  - Bananas
   layers:
   - Default
   - TransparentFX
