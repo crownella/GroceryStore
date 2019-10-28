@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\kateh\.Rider2018.3\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\kateh\.Rider2018.3\system\resharper-host\local\Transient\ReSharperHost\v183\SolutionCaches\_GroceryStore.-216800708.00" t="ExcludeRecursive" />
+    <e p="C:\Users\kateh\Documents\NYU\Sem_Fall 2019\Major Studio\Repositories\GroceryStore\GroceryStore" t="IncludeRecursive">
+      <e p="Assembly-CSharp-firstpass.csproj" t="IncludeRecursive" />
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="Plugins" t="Include">
+          <e p="Kupio" t="Include">
+            <e p="InstinctAI" t="Include">
+              <e p="Examples" t="Include">
+                <e p="Cat and Mouse" t="Include">
+                  <e p="Scripts" t="Include">
+                    <e p="Arena.cs" t="Include" />
+                    <e p="Arena.generated.cs" t="Include" />
+                    <e p="Cat.cs" t="Include" />
+                    <e p="Cat.generated.cs" t="Include" />
+                    <e p="Miow.cs" t="Include" />
+                    <e p="Miow.generated.cs" t="Include" />
+                    <e p="Mouse.cs" t="Include" />
+                    <e p="Mouse.generated.cs" t="Include" />
+                  </e>
+                </e>
+                <e p="Dumper truck" t="Include">
+                  <e p="Scripts" t="Include">
+                    <e p="Truck.cs" t="Include" />
+                    <e p="Truck.generated.cs" t="Include" />
+                  </e>
+                </e>
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="Scripts" t="Include">
+          <e p="Aisle.cs" t="Include" />
+          <e p="Cart.cs" t="Include" />
+          <e p="Customer.cs" t="Include" />
+          <e p="Customer.generated.cs" t="Include" />
+          <e p="CustomerSpawner.cs" t="Include" />
+          <e p="GameManger.cs" t="Include" />
+          <e p="GroceryItems" t="Include">
+            <e p="Apples.cs" t="Include" />
+            <e p="Bagel.cs" t="Include" />
+            <e p="Banana.cs" t="Include" />
+            <e p="Bread.cs" t="Include" />
+            <e p="Butter.cs" t="Include" />
+            <e p="Celery.cs" t="Include" />
+            <e p="Cereal.cs" t="Include" />
+            <e p="Cheese.cs" t="Include" />
+            <e p="Eggplant.cs" t="Include" />
+            <e p="Frozen Pizza.cs" t="Include" />
+            <e p="GroceryItem.cs" t="Include" />
+            <e p="Ice Cream.cs" t="Include" />
+            <e p="Milk.cs" t="Include" />
+            <e p="Orange.cs" t="Include" />
+            <e p="Squash.cs" t="Include" />
+            <e p="Watermelon.cs" t="Include" />
+          </e>
+          <e p="Inventory.cs" t="Include" />
+          <e p="Staff.cs" t="Include" />
+          <e p="Staff.generated.cs" t="Include" />
+          <e p="Stock.cs" t="Include" />
+        </e>
+      </e>
+      <e p="GroceryStore.sln" t="IncludeFlat" />
+      <e p="Library" t="ExcludeRecursive" />
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="packages" t="ExcludeRecursive" />
+      <e p="Temp" t="ExcludeRecursive">
+        <e p="bin" t="ExcludeRecursive" />
+      </e>
+    </e>
+  </component>
+</project>

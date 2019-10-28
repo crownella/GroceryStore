@@ -5,6 +5,8 @@
  * It is safe to edit this file.
  */
 
+using System.Runtime.CompilerServices;
+
 namespace instinctai.usr.behaviours
 {
     using UnityEngine;
@@ -20,11 +22,10 @@ namespace instinctai.usr.behaviours
         //random generated factors
         public int listSize;
         public List<GroceryItem> shoppingList = new List<GroceryItem>(); 
-        public List<GroceryItem> itemsInCart = new List<GroceryItem>();
         List<Aisle> checkedAisles = new List<Aisle>(); //keeps track of waht aisles the customer has been on
         public int confusion; //0-100 how confused the shopper is
 
-        private Inventory inventory;
+        private Cart cart;
 
         //movementManager
         public int lastCheckedAisle;
@@ -50,7 +51,12 @@ namespace instinctai.usr.behaviours
 
         void Start()
         {
-            inventory = gameObject.GetComponent<Inventory>();
+            GameManger gM = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManger>();
+            groceryItems = gM.groceryItemsMaster;
+            aisles = gM.aislesMaster;
+            exitPoints = gM.exitPointsMaster;
+            
+            cart = gameObject.GetComponent<Cart>();
 
 
             //random generation
@@ -58,12 +64,28 @@ namespace instinctai.usr.behaviours
             listSize = Random.Range(1, 10);
             while(shoppingList.Count < listSize)
             {
+                bool inList;
                 for (int i = 0; i < groceryItems.Length; i++)
                 {
+                    inList = false;
                     if(shoppingList.Count >= listSize)
                         break;
+                    
 
                     int randomChance = Random.Range(0, 100);
+
+                    foreach(GroceryItem g in shoppingList)
+                    {
+                        if (g.Equals(groceryItems[i]))
+                        {
+                            inList = true;
+                        }
+                    }
+
+                    if (inList)
+                    {
+                        continue;
+                    }
                     if (randomChance > 50)
                     {
                         shoppingList.Add(groceryItems[i]);
@@ -195,7 +217,6 @@ namespace instinctai.usr.behaviours
         public NodeVal PickAisle()
         {
             Aisle targetAisle = null;
-            bool alreadyChecked = false;
             
 
             //depening on conufsion level, go to the next aisle with something you need, the next aisle, or a slight chance to go to a random one
@@ -250,7 +271,12 @@ namespace instinctai.usr.behaviours
                         }
                     }
                 }
-                targetLocation = worst.transform;
+
+                if (worst != null)
+                {
+                    targetLocation = worst.transform;
+                }
+                
             }
             else
             {
@@ -275,7 +301,11 @@ namespace instinctai.usr.behaviours
                         }
                     }
                 }
-                targetLocation = best.transform;
+
+                if (best != null)
+                {
+                    targetLocation = best.transform;
+                }
             }
             return NodeVal.Success;
         }
@@ -327,21 +357,28 @@ namespace instinctai.usr.behaviours
         {
             Stock targetStock = targetGrocery.Shelf;
             //take up to 3
-            targetStock.Take(Random.Range(0,3), inventory);
+            bool successful = targetStock.AddToCart(Random.Range(1, 3), cart, targetGrocery);
 
-            //if there isnt any nothing happens atm
+            //if the stock was empty
+            if (!successful)
+            {
+                //customer is mad, show emotiocon
+                print("Im Mad");
 
-            //show emoticon maye?
+            }
 
+            //done searchign for  item
             foundItem = true;
 
             //remove the grocery from your shopping list!
             shoppingList.Remove(targetGrocery);
-            itemsInCart.Add(targetGrocery);
+            
+            //if everything is off ur shopping list ur done shopping
             if(shoppingList.Count < 1)
             {
                 shoppingDone = true;
             }
+            
             return NodeVal.Success;
         }
 
