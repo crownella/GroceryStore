@@ -51,6 +51,8 @@ namespace instinctai.usr.behaviours
         public bool doneWithCurrentAisle = true;
 
 
+
+
         void Awake()
         {
             GameManger gM = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManger>();
@@ -64,9 +66,9 @@ namespace instinctai.usr.behaviours
 
 
             //random generation
-            confusion = Random.Range(0, 100);
-            listSize = Random.Range(1, 10);
-            speed = Random.Range(2, 8);
+            confusion = Random.Range(gM.minConfusion, gM.MaxConfusion);
+            listSize = Random.Range(gM.minShoppingListSize, gM.maxShoppingListSize);
+            speed = Random.Range(gM.minStaffSpeed, gM.maxStaffSpeed);
             while (shoppingList.Count < listSize)
             {
                 bool inList;

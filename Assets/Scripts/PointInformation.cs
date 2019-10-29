@@ -5,16 +5,7 @@ using UnityEngine;
 public class PointInformation : MonoBehaviour
 {
     public Aisle[] closeAisles;
+    public int pointNumber;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+   
 }

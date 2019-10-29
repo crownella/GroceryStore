@@ -8,7 +8,4 @@ public class Aisle : MonoBehaviour
     public GroceryItem[] itemsOnShelf;
     public GameObject[] shopSpots;
 
-
-
-
 }

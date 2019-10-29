@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 4035848973984857632}
   m_Layer: 0
   m_Name: Customer
-  m_TagString: Untagged
+  m_TagString: Customer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -123,37 +123,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35beec13af5744c43910110c6706ad9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  groceryItems:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  aisles:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  exitPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   listSize: 0
   shoppingList: []
   confusion: 0
-  lastCheckedAisle: 0
   targetGrocery: {fileID: 0}
   currentAisle: {fileID: 0}
-  aislesChecked: 0
+  shoppingPath: {fileID: 0}
+  shoppingPoints: []
+  currentShoppingPoint: 0
+  speed: 0
   foundAisle: 0
   foundItem: 1
   shoppingDone: 0
   checkingOut: 0
   gone: 0
   spawned: 0
+  doneWithCurrentAisle: 1
 --- !u!1 &4035848974362418553
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,6 +16,8 @@ TagManager:
   - AisleExit
   - End
   - Exit
+  - Customer
+  - Staff
   layers:
   - Default
   - TransparentFX
