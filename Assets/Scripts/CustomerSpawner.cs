@@ -23,7 +23,7 @@ public class CustomerSpawner : MonoBehaviour
         StartCoroutine(SpawnDelay());
     }
 
-    public IEnumerator SpawnDelay()
+    IEnumerator SpawnDelay()
     {
         yield return new WaitForSeconds(gM.customerSpawnDelay);
 
@@ -35,7 +35,7 @@ public class CustomerSpawner : MonoBehaviour
     }
 
 
-    public IEnumerator SpawnCustomers()
+    IEnumerator SpawnCustomers()
     {
         yield return new WaitForSeconds(Random.Range(gM.minCustomerSpawnTime, gM.maxCustomerSpeed));
 

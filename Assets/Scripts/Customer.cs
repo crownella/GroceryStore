@@ -49,8 +49,11 @@ namespace instinctai.usr.behaviours
         public bool gone;
         public bool spawned;
         public bool doneWithCurrentAisle = true;
+        public bool doneCheckingOut;
+        public bool readyToCheckOut;
 
-
+        //check out
+        CheckOut currentCheckOut;
 
 
         void Awake()
@@ -68,7 +71,7 @@ namespace instinctai.usr.behaviours
             //random generation
             confusion = Random.Range(gM.minConfusion, gM.MaxConfusion);
             listSize = Random.Range(gM.minShoppingListSize, gM.maxShoppingListSize);
-            speed = Random.Range(gM.minStaffSpeed, gM.maxStaffSpeed);
+            speed = Random.Range(gM.minCustomerSpeed, gM.maxCustomerSpeed);
             while (shoppingList.Count < listSize)
             {
                 bool inList;
@@ -179,7 +182,7 @@ namespace instinctai.usr.behaviours
             currentShoppingPoint += 1;
 
             //if the next spot is the one you want, set variables
-            if (!shoppingPoints[currentShoppingPoint].gameObject.CompareTag("AisleExit"))
+            if (shoppingPoints[currentShoppingPoint].gameObject.CompareTag("AisleExit"))
             {
                 foundAisle = false;
 
@@ -201,9 +204,9 @@ namespace instinctai.usr.behaviours
             currentShoppingPoint += 1;
 
             //if the next spot is the one you want, set variables
-            if (!shoppingPoints[currentShoppingPoint].gameObject.CompareTag("End"))
+            if (shoppingPoints[currentShoppingPoint].gameObject.CompareTag("End"))
             {
-                checkingOut = true;
+                readyToCheckOut = true;
             }
 
             return NodeVal.Success;
@@ -221,7 +224,7 @@ namespace instinctai.usr.behaviours
             currentShoppingPoint += 1;
 
             //if the next spot is the one you want, set variables
-            if (!shoppingPoints[currentShoppingPoint].gameObject.CompareTag("Exit"))
+            if (shoppingPoints[currentShoppingPoint].gameObject.CompareTag("Exit"))
             {
                 gone = true;
             }
@@ -301,35 +304,44 @@ namespace instinctai.usr.behaviours
         }
 
 
-        //checking out is true and gone is false
+        //checking out is true and gone is false and shopping is done adn done checking out is false
         public NodeVal checkout()
         {
-            checkingOut = true;
-
-            //thsi return the closest exit point 
-            Transform best = null;
-            float smallestDistance = 0;
-            foreach (Transform t in exitPoints)
+            if (!checkingOut)
             {
-                if (best == null) //first object in check spots
+                 currentCheckOut = checkOuts[Random.Range(0, checkOuts.Length - 1)];
+                
+
+                if (!currentCheckOut.Push(gameObject))
                 {
-                    best = t;
-                    smallestDistance = Vector3.Distance(t.position, this.transform.position);
+                    print("I Cant Check Out");
+                    doneCheckingOut = true;
+                    
                 }
                 else
                 {
-                    //if the distance between the next is great
-                    float distance = Vector3.Distance(t.position, this.transform.position);
-                    if (distance < smallestDistance)
-                    {
-                        smallestDistance = distance;
-                        best = t;
-                    }
+                    targetLocation = currentCheckOut.customerLocations[currentCheckOut.getIndex(this.gameObject)].transform;
+                    checkingOut = true;
                 }
-            }
-            targetLocation = best;
 
-            checkingOut = true;
+               
+
+            }
+            else
+            {
+                if (!currentCheckOut.Occupied)
+                {
+                    doneCheckingOut = true;
+                    return NodeVal.Success;
+                }
+                //where to stand in line
+                targetLocation = currentCheckOut.customerLocations[currentCheckOut.getIndex(this.gameObject)].transform;
+                
+                
+            }
+
+
+            
             return NodeVal.Success;
         }
 

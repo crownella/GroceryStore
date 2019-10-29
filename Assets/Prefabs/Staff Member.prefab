@@ -110,6 +110,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   aisles:
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   lastCheckedAisleNumber: -1
   lastCheckedItem: {fileID: 0}
   itemStocked: 1

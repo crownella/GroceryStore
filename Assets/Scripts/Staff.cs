@@ -12,7 +12,7 @@ namespace instinctai.usr.behaviours
 
     public partial class Staff : MonoBehaviour
     {
-        public Aisle[] aisles;
+        private Aisle[] aisles;
         public int lastCheckedAisleNumber = -1;
         public GroceryItem lastCheckedItem;
         public bool itemStocked = true;
@@ -27,12 +27,22 @@ namespace instinctai.usr.behaviours
         public int AislesChecked = 0;
         public bool inventoryEmpty = true;
 
+        public GameManger gM;
+
+
 
         // Start is called before the first frame update
         void Start()
         {
+            GameManger gM = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManger>();
+
+            aisles = gM.aislesMaster;
+
+            //random generation
+            lastCheckedAisleNumber = Random.Range(-1, aisles.Length - 2);
+            lastCheckedItem = aisles[lastCheckedAisleNumber + 1].itemsOnShelf[Random.Range(0, aisles[lastCheckedAisleNumber + 1].itemsOnShelf.Length)];
+
             inventory = gameObject.GetComponent<Inventory>();
-            lastCheckedItem = null;
         }
 
 
@@ -59,6 +69,7 @@ namespace instinctai.usr.behaviours
 
             //set location to check spot position
             targetLocation = targetCheckSpot.transform.position;
+
 
             foundAisle = true;
 
