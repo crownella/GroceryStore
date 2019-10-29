@@ -15,24 +15,31 @@ namespace instinctai.usr.behaviours
 
     public partial class Customer : MonoBehaviour
     {
-        public GroceryItem[] groceryItems; //all possible grocery items
-        public Aisle[] aisles; //all items in store
-        public Transform[] exitPoints; //all points a customer can go to leave
+        private GroceryItem[] groceryItems; //all possible grocery items
+        //private Aisle[] aisles; //all items in store
+        private Transform[] exitPoints; //all points a customer can go to leave
+        private GameObject[] shoppingPaths; //array of shoppping paths to avoid walking through things yay
+        private CheckOut[] checkOuts; //array of check outs
 
         //random generated factors
         public int listSize;
         public List<GroceryItem> shoppingList = new List<GroceryItem>(); 
-        List<Aisle> checkedAisles = new List<Aisle>(); //keeps track of waht aisles the customer has been on
+        //List<Aisle> checkedAisles = new List<Aisle>(); //keeps track of waht aisles the customer has been on
         public int confusion; //0-100 how confused the shopper is
 
         private Cart cart;
 
         //movementManager
-        public int lastCheckedAisle;
+       // public int lastCheckedAisle;
         private Transform targetLocation;
         public GroceryItem targetGrocery;
         public Aisle currentAisle;
-        public int aislesChecked; //how many aisles in store you have checked
+        //public int aislesChecked; //how many aisles in store you have checked
+        List<Aisle> closeAisles = new List<Aisle>(); //keeps track of what aisles customer is close to
+        public GameObject shoppingPath;
+        public List<GameObject> shoppingPoints = new List<GameObject>();
+        public int currentShoppingPoint;
+        public float speed;
 
         //state manager
         public bool foundAisle; //is not searching for an aisle
@@ -41,20 +48,17 @@ namespace instinctai.usr.behaviours
         public bool checkingOut;
         public bool gone;
         public bool spawned;
+        public bool doneWithCurrentAisle = true;
 
 
-
-        
-
-
-
-
-        void Start()
+        void Awake()
         {
             GameManger gM = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManger>();
             groceryItems = gM.groceryItemsMaster;
-            aisles = gM.aislesMaster;
+            //aisles = gM.aislesMaster;
             exitPoints = gM.exitPointsMaster;
+            shoppingPaths = gM.shoppingPathsMaster;
+            checkOuts = gM.checkOutsMaster;
             
             cart = gameObject.GetComponent<Cart>();
 
@@ -62,7 +66,8 @@ namespace instinctai.usr.behaviours
             //random generation
             confusion = Random.Range(0, 100);
             listSize = Random.Range(1, 10);
-            while(shoppingList.Count < listSize)
+            speed = Random.Range(2, 8);
+            while (shoppingList.Count < listSize)
             {
                 bool inList;
                 for (int i = 0; i < groceryItems.Length; i++)
@@ -91,262 +96,173 @@ namespace instinctai.usr.behaviours
                         shoppingList.Add(groceryItems[i]);
                     }
                 }
+               
+            }
+
+            //deceiding on a shopping path
+            if(confusion > 75)
+            {
+                shoppingPath = shoppingPaths[Random.Range(0, shoppingPaths.Length - 1)];
+            }
+            else if(confusion > 50)
+            {
+                shoppingPath = shoppingPaths[shoppingPaths.Length - 1];
+            }
+            else
+            {
+                shoppingPath = shoppingPaths[0];
+            }
+            
+            //add all the points from the shopping path to this customers shopping points
+            foreach(Transform child in shoppingPath.transform)
+            {
+                shoppingPoints.Add(child.gameObject);
             }
            
         }
-
-        //deciedes where the customer will start shopping and the next Aisle to go to 
-        //found aisle is false
-        //foudn item is true
-        //spawned is false
-        public NodeVal PickFirstAisle()
+        
+        //spawned is flase, found item is true, found aisle is false
+        public NodeVal StartShopping()
         {
-            Aisle targetAisle = null;
-            bool alreadyChecked = false;
-            //find first aisle with an item on the shopping list
-            for (int i = 0; i < aisles.Length - 1; i++)
-            {
-                //make sure the aisles isnt on the list on checked asiles first
-                /* dont need this in this method
-                foreach (Aisle b in checkedAisles)
-                {
-                    if (aisles[i].Equals(b)){
-                        alreadyChecked = true;
-                        break;
-                    }
-                }
-                */
-                foreach (GroceryItem g in aisles[i].itemsOnShelf)
-                {
-                    if (alreadyChecked)
-                    {
-                        break; //cant become target isle
-                    }
-                    foreach (GroceryItem h in shoppingList)
-                    {
-                        if (g.Equals(h))
-                        {
-                            targetAisle = aisles[i];
-                            lastCheckedAisle = i;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            //depening on conufsion level, go to the aisle, the first aisle, the last aisle or a random aisle
-            if(confusion < 25)
-            {
-                //no change, only here for readibilty
-            }else if(confusion < 50)
-            {
-                targetAisle = aisles[0];
-            }else if(confusion < 75)
-            {
-                targetAisle = aisles[aisles.Length - 1];
-            }
-            else
-            {
-                targetAisle = aisles[Random.Range(0, aisles.Length - 1)];
-            }
+            //set target location to start of shopping path
+            targetLocation = shoppingPoints[0].gameObject.transform;
 
-            currentAisle = targetAisle;
-            foundAisle = true;
-
-            //set targetlocation to aisle start points, go to closest one or farthest one if confusion is high
-            if (confusion > 75)
-            {
-                //this returns the furthest check spot from the player
-                GameObject worst = null;
-                float biggestDistance = 0;
-                foreach( GameObject g in targetAisle.shopSpots)
-                {
-                    if(worst == null) //first object in check spots
-                    {
-                        worst = g;
-                        biggestDistance = Vector3.Distance(g.transform.position, this.transform.position);
-                    }
-                    else
-                    {
-                        //if the distance between the next is great
-                        float distance = Vector3.Distance(g.transform.position, this.transform.position);
-                        if (distance > biggestDistance)
-                        {
-                            biggestDistance = distance;
-                            worst = g;
-                        }
-                    } 
-                }
-                targetLocation = worst.transform;
-            }
-            else
-            {
-                //thsi return the closest check spot to the player
-                GameObject best = null;
-                float smallestDistance = 0;
-                foreach (GameObject g in targetAisle.shopSpots)
-                {
-                    if (best == null) //first object in check spots
-                    {
-                        best = g;
-                        smallestDistance = Vector3.Distance(g.transform.position, this.transform.position);
-                    }
-                    else
-                    {
-                        //if the distance between the next is great
-                        float distance = Vector3.Distance(g.transform.position, this.transform.position);
-                        if (distance < smallestDistance)
-                        {
-                            smallestDistance = distance;
-                            best = g;
-                        }
-                    }
-                }
-                targetLocation = best.transform;
-            }
+            //check its the start
+            if (!shoppingPoints[0].gameObject.CompareTag("Start"))
+                throw new System.Exception("StartShopping cant find start of shopping path");
             spawned = true;
-            return NodeVal.Success;
-        }
+            currentShoppingPoint = 0;
 
-
-        //picks the next aisle to go to
-        //spawned is true
-        //found aisle is false
-        //foudn item is true
-        //shoppingDone is false - which means there is atleast one isle we havent searched yet
-        public NodeVal PickAisle()
-        {
-            Aisle targetAisle = null;
+            //move to starting point
             
-
-            //depening on conufsion level, go to the next aisle with something you need, the next aisle, or a slight chance to go to a random one
-            if (confusion < 25)
-            {
-                //change this later: right now just goes to next aisle
-                if (lastCheckedAisle + 1 > aisles.Length - 1)
-                {
-                    lastCheckedAisle = -1;
-                }
-                targetAisle = aisles[lastCheckedAisle + 1];
-                lastCheckedAisle = lastCheckedAisle + 1;
-            }
-            else if (confusion < 98)
-            {
-                if(lastCheckedAisle + 1 > aisles.Length - 1)
-                {
-                    lastCheckedAisle = -1;
-                }
-                targetAisle = aisles[lastCheckedAisle + 1];
-                lastCheckedAisle = lastCheckedAisle + 1;
-            }
-            else
-            {
-                targetAisle = aisles[Random.Range(0, aisles.Length - 1)];
-            }
-
-            currentAisle = targetAisle;
-            foundAisle = true;
-
-            //set targetlocation to aisle start points, go to closest one or farthest one if confusion is high
-            if (confusion > 75)
-            {
-                //this returns the furthest check spot from the player
-                GameObject worst = null;
-                float biggestDistance = 0;
-                foreach (GameObject g in targetAisle.shopSpots)
-                {
-                    if (worst == null) //first object in check spots
-                    {
-                        worst = g;
-                        biggestDistance = Vector3.Distance(g.transform.position, this.transform.position);
-                    }
-                    else
-                    {
-                        //if the distance between the next is great
-                        float distance = Vector3.Distance(g.transform.position, this.transform.position);
-                        if (distance > biggestDistance)
-                        {
-                            biggestDistance = distance;
-                            worst = g;
-                        }
-                    }
-                }
-
-                if (worst != null)
-                {
-                    targetLocation = worst.transform;
-                }
-                
-            }
-            else
-            {
-                //thsi return the closest check spot to the player
-                GameObject best = null;
-                float smallestDistance = 0;
-                foreach (GameObject g in targetAisle.shopSpots)
-                {
-                    if (best == null) //first object in check spots
-                    {
-                        best = g;
-                        smallestDistance = Vector3.Distance(g.transform.position, this.transform.position);
-                    }
-                    else
-                    {
-                        //if the distance between the next is great
-                        float distance = Vector3.Distance(g.transform.position, this.transform.position);
-                        if (distance < smallestDistance)
-                        {
-                            smallestDistance = distance;
-                            best = g;
-                        }
-                    }
-                }
-
-                if (best != null)
-                {
-                    targetLocation = best.transform;
-                }
-            }
             return NodeVal.Success;
         }
+
+        //spawned is true, found item is true, found aisle is false, done with current aisle is true
+        public NodeVal MoveToNextAisleStart()
+        {
+            //set target location to next spot
+            if (currentShoppingPoint + 1 >= shoppingPoints.Count)
+            {
+                currentShoppingPoint = -1;
+            }
+            targetLocation = shoppingPoints[currentShoppingPoint + 1].gameObject.transform;
+            currentShoppingPoint += 1;
+
+            //if the next spot is the one you want, set variables
+            if (shoppingPoints[currentShoppingPoint].gameObject.CompareTag("AisleStart"))
+            {
+                doneWithCurrentAisle = false;
+                foundAisle = true;
+
+                Aisle[] tmp = shoppingPoints[currentShoppingPoint].gameObject.GetComponent<PointInformation>().closeAisles;
+                foreach (Aisle a in tmp)
+                {
+                    closeAisles.Add(a);
+                }
+            }
+
+            return NodeVal.Success;
+        }
+
+        //spawned is true, found item is true, found aisle is true, done with current aisle is true
+        public NodeVal MoveToAisleExit()
+        {
+            //set target location to next spot
+            if (currentShoppingPoint + 1 >= shoppingPoints.Count)
+            {
+                currentShoppingPoint = -1;
+            }
+            targetLocation = shoppingPoints[currentShoppingPoint + 1].gameObject.transform;
+            currentShoppingPoint += 1;
+
+            //if the next spot is the one you want, set variables
+            if (!shoppingPoints[currentShoppingPoint].gameObject.CompareTag("AisleExit"))
+            {
+                foundAisle = false;
+
+                closeAisles.Clear();
+            }
+            
+            return NodeVal.Success;
+        }
+
+        //spawned is true, found item is true, found aisle is false, done with current aisle is true, done shopping is true
+        public NodeVal MoveToEnd()
+        {
+            //set target location to next spot
+            if (currentShoppingPoint + 1 >= shoppingPoints.Count)
+            {
+                currentShoppingPoint = -1;
+            }
+            targetLocation = shoppingPoints[currentShoppingPoint + 1].gameObject.transform;
+            currentShoppingPoint += 1;
+
+            //if the next spot is the one you want, set variables
+            if (!shoppingPoints[currentShoppingPoint].gameObject.CompareTag("End"))
+            {
+                checkingOut = true;
+            }
+
+            return NodeVal.Success;
+        }
+
+        //done shopping is true, checking out is false
+        public NodeVal MoveToExit()
+        {
+            //set target location to next spot
+            if (currentShoppingPoint + 1 >= shoppingPoints.Count)
+            {
+                currentShoppingPoint = -1;
+            }
+            targetLocation = shoppingPoints[currentShoppingPoint + 1].gameObject.transform;
+            currentShoppingPoint += 1;
+
+            //if the next spot is the one you want, set variables
+            if (!shoppingPoints[currentShoppingPoint].gameObject.CompareTag("Exit"))
+            {
+                gone = true;
+            }
+
+
+            return NodeVal.Success;
+        }
+
+        public NodeVal MoveTowards()
+        {
+            transform.position = Vector3.MoveTowards(transform.position, targetLocation.position, speed * Time.deltaTime);
+            return NodeVal.Success;
+        }
+        
 
         //checks the items on a particular aisle 
         //found aisle is true
         //foudn item is true
-        public NodeVal CheckItems()
+        //done with current aisle is false
+        public NodeVal CheckItemsOnNearAisles()
         {
-            //search all items on aisle
-            foreach(GroceryItem g in currentAisle.itemsOnShelf)
+            foreach(Aisle a in closeAisles)
             {
-                foreach (GroceryItem h in shoppingList)
+                foreach (GroceryItem g in a.itemsOnShelf)
                 {
-                    if (g.Equals(h))
+                    foreach (GroceryItem h in shoppingList)
                     {
-                        //if any item is on the shoppin glist, found item is false  set target grocery item
-                        targetGrocery = g;
-                        targetLocation = targetGrocery.accessSpot;
-                        foundItem = false;
-                        return NodeVal.Success;
+                        if (g.Equals(h))
+                        {
+                            //if any item is on the shoppin glist, found item is false  set target grocery item
+                            targetGrocery = g;
+                            targetLocation = targetGrocery.accessSpot;
+                            foundItem = false;
+                            return NodeVal.Success;
+                        }
                     }
                 }
             }
+            //search all items on both aisle
 
-
-            //add aisle to list of checked aisles
-            checkedAisles.Add(currentAisle);
-
-            //if we have checked all the aisles, we are done shopping
-            /*
-            if (checkedAisles.Count.Equals(aisles.Length))
-            {
-                print("checked all aisles");
-                shoppingDone = true;
-            }
-            */
-
-            aislesChecked += 1;
 
             foundAisle = false;
+            doneWithCurrentAisle = true;
             return NodeVal.Success;
         }
 
@@ -383,7 +299,7 @@ namespace instinctai.usr.behaviours
         }
 
 
-        //joins the cash register queue  //currently just sends the customer to an exit point
+        //checking out is true and gone is false
         public NodeVal checkout()
         {
             checkingOut = true;
@@ -411,11 +327,11 @@ namespace instinctai.usr.behaviours
             }
             targetLocation = best;
 
-            checkingOut = false;
+            checkingOut = true;
             return NodeVal.Success;
         }
 
-        //disappears
+        //if gone is true
         public NodeVal Leave()
         {
             Destroy(this.gameObject);

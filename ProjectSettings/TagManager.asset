@@ -11,6 +11,11 @@ TagManager:
   - Aisle 5
   - Aisle 6
   - Bananas
+  - Start
+  - AisleStart
+  - AisleExit
+  - End
+  - Exit
   layers:
   - Default
   - TransparentFX
