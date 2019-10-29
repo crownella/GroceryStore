@@ -16,27 +16,22 @@ namespace instinctai.usr.behaviours
     public partial class Customer : MonoBehaviour
     {
         private GroceryItem[] groceryItems; //all possible grocery items
-        //private Aisle[] aisles; //all items in store
-        private Transform[] exitPoints; //all points a customer can go to leave
         private GameObject[] shoppingPaths; //array of shoppping paths to avoid walking through things yay
         private CheckOut[] checkOuts; //array of check outs
 
         //random generated factors
-        public int listSize;
-        public List<GroceryItem> shoppingList = new List<GroceryItem>(); 
-        //List<Aisle> checkedAisles = new List<Aisle>(); //keeps track of waht aisles the customer has been on
+        public int listSize; //size of shopping list
+        public List<GroceryItem> shoppingList = new List<GroceryItem>(); //shopping list of grocery items, randomly generated at start
         public int confusion; //0-100 how confused the shopper is
 
-        private Cart cart;
+        //inventory
+        private Cart cart; //cart componenet on customer object where grocery items are added
 
         //movementManager
-       // public int lastCheckedAisle;
-        private Transform targetLocation;
-        public GroceryItem targetGrocery;
-        public Aisle currentAisle;
-        //public int aislesChecked; //how many aisles in store you have checked
+        private Transform targetLocation; //used in all movement
+        public GroceryItem targetGrocery; //used when moving to a specific grocery item
         List<Aisle> closeAisles = new List<Aisle>(); //keeps track of what aisles customer is close to
-        public GameObject shoppingPath;
+        public GameObject shoppingPath; 
         public List<GameObject> shoppingPoints = new List<GameObject>();
         public int currentShoppingPoint;
         public float speed;
@@ -44,13 +39,13 @@ namespace instinctai.usr.behaviours
         //state manager
         public bool foundAisle; //is not searching for an aisle
         public bool foundItem = true; //is not searching for item
-        public bool shoppingDone;
-        public bool checkingOut;
-        public bool gone;
-        public bool spawned;
-        public bool doneWithCurrentAisle = true;
-        public bool doneCheckingOut;
-        public bool readyToCheckOut;
+        public bool shoppingDone; //shopping list is empty
+        public bool checkingOut; //in the process of being checked out or is in line
+        public bool gone; //at an exit location, ready to despawn
+        public bool spawned; //intial variables intialized
+        public bool doneWithCurrentAisle = true; //ready to move to next aisle, checked all item on close aisle
+        public bool doneCheckingOut; //finished the check out process, ready to move to exit
+        public bool readyToCheckOut; //done shopping, looking for shopping line to join
 
         //check out
         CheckOut currentCheckOut;
@@ -60,8 +55,6 @@ namespace instinctai.usr.behaviours
         {
             GameManger gM = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManger>();
             groceryItems = gM.groceryItemsMaster;
-            //aisles = gM.aislesMaster;
-            exitPoints = gM.exitPointsMaster;
             shoppingPaths = gM.shoppingPathsMaster;
             checkOuts = gM.checkOutsMaster;
             
@@ -75,7 +68,8 @@ namespace instinctai.usr.behaviours
             while (shoppingList.Count < listSize)
             {
                 bool inList;
-                for (int i = 0; i < groceryItems.Length; i++)
+                //random range in for loop so customers dont start at beginning of grocery item list every time(gives more item randomization)
+                for (int i = Random.Range(0,groceryItems.Length-1); i < groceryItems.Length; i++)
                 {
                     inList = false;
                     if(shoppingList.Count >= listSize)
@@ -192,7 +186,7 @@ namespace instinctai.usr.behaviours
             return NodeVal.Success;
         }
 
-        //spawned is true, found item is true, found aisle is false, done with current aisle is true, done shopping is true
+        //done shopping is true, checking out is false
         public NodeVal MoveToEnd()
         {
             //set target location to next spot
@@ -212,27 +206,22 @@ namespace instinctai.usr.behaviours
             return NodeVal.Success;
         }
 
-        //done shopping is true, checking out is false
+        //done shopping is true, checking out is true
         public NodeVal MoveToExit()
         {
-            //set target location to next spot
-            if (currentShoppingPoint + 1 >= shoppingPoints.Count)
-            {
-                currentShoppingPoint = -1;
-            }
-            targetLocation = shoppingPoints[currentShoppingPoint + 1].gameObject.transform;
-            currentShoppingPoint += 1;
 
-            //if the next spot is the one you want, set variables
-            if (shoppingPoints[currentShoppingPoint].gameObject.CompareTag("Exit"))
+            //go to last point in shopping points
+            if (shoppingPoints[shoppingPoints.Count - 1].CompareTag("Exit"))
             {
+                targetLocation = shoppingPoints[shoppingPoints.Count - 1].transform;
                 gone = true;
+                return NodeVal.Success;
             }
 
-
-            return NodeVal.Success;
+            return NodeVal.Fail;
         }
 
+        //moves customer towards its target location by the customers speed
         public NodeVal MoveTowards()
         {
             transform.position = Vector3.MoveTowards(transform.position, targetLocation.position, speed * Time.deltaTime);
@@ -320,7 +309,8 @@ namespace instinctai.usr.behaviours
                 }
                 else
                 {
-                    targetLocation = currentCheckOut.customerLocations[currentCheckOut.getIndex(this.gameObject)].transform;
+                   // print("Added to check out, " + currentCheckOut.getIndex(this.gameObject));
+                    targetLocation = currentCheckOut.customerLocations[cart.positionInQueue].transform;
                     checkingOut = true;
                 }
 
@@ -329,15 +319,20 @@ namespace instinctai.usr.behaviours
             }
             else
             {
-                if (!currentCheckOut.Occupied)
+                if (cart.boughtAllItems)
                 {
+                    print("Finished Checking out");
                     doneCheckingOut = true;
                     return NodeVal.Success;
                 }
                 //where to stand in line
-                targetLocation = currentCheckOut.customerLocations[currentCheckOut.getIndex(this.gameObject)].transform;
+
+                //print("Getting in line " + gameObject.name + " index: " + currentCheckOut.getIndex(this.gameObject));
+
                 
-                
+                targetLocation = currentCheckOut.customerLocations[cart.positionInQueue].transform;
+
+
             }
 
 

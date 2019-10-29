@@ -6332,6 +6332,7 @@ MonoBehaviour:
   minStaffSpeed: 0
   maxStaffSpeed: 0
   startingStock: 0
+  checkOutTimeMultiplier: 2
 --- !u!1 &576131253
 GameObject:
   m_ObjectHideFlags: 0
@@ -13890,7 +13891,7 @@ GameObject:
   - component: {fileID: 1510757006}
   m_Layer: 0
   m_Name: Point (7)
-  m_TagString: Untagged
+  m_TagString: End
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

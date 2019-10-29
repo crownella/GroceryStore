@@ -33,4 +33,7 @@ public class GameManger : MonoBehaviour
     //Starting Stock
     public int startingStock;
 
+    //check out
+    public float checkOutTimeMultiplier = 2;
+
 }

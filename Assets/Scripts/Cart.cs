@@ -5,6 +5,8 @@ using UnityEngine;
 public class Cart : Inventory
 {
    public List<GroceryItem> itemInCart = new List<GroceryItem>();
+    public bool boughtAllItems;
+    public int positionInQueue = -1;
 
    void Start()
    {
