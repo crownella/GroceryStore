@@ -9,47 +9,160 @@ namespace instinctai.usr.behaviours
 {
     using UnityEngine;
     using com.kupio.instinctai;
+    using System.Collections.Generic;
 
     public partial class Staff : MonoBehaviour
     {
-        private Aisle[] aisles;
-        public int lastCheckedAisleNumber = -1;
-        public GroceryItem lastCheckedItem;
-        public bool itemStocked = true;
-        public bool foundAisle = false;
+        //inventory
         private Inventory inventory;
+
+        //movement
         public Vector3 targetLocation;
         public GameObject targetCheckSpot;
-        public Aisle targetAisle;
         public GroceryItem targetGrocery;
-        public bool firstCheck;
-        public int minShelfValue = 2;
-        public int AislesChecked = 0;
+        public Stock targetStock;
+        public GroceryItem lastCheckedItem;
+
+        private GameObject staffPath;
+        private List<GameObject> staffPoints = new List<GameObject>();
+        private int currentStaffPoint;
+        private float speed;
+        private List<Aisle> closeAisles = new List<Aisle>(); //keeps track of what aisles staff is close to
+        private List<GameObject> aisleCheckPoints = new List<GameObject>(); //keeps track of how many aisles need to be checked for staff to be done
+        private int CheckedPoints = 0;
+
+        //State management
         public bool inventoryEmpty = true;
+        public bool firstCheck;
+        public bool itemStocked = true;
+        public bool foundAisle;
+        public bool spawned;
+        public bool movingToStockRoom;
+        public bool atStock;
+        public bool movingToShelf;
+        public bool allItemsStocked;
+        public bool movingToAisle;
 
-        public GameManger gM;
-
-
+        //game manager variables
+        private int _minShelfStockAccepted = 2;
+        private GameObject[] staffPaths; //array of staff paths to avoid walking through things yay
+        private CheckOut[] checkOuts; //array of check outs
 
         // Start is called before the first frame update
         void Start()
         {
             GameManger gM = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManger>();
 
-            aisles = gM.aislesMaster;
+            //aisles = gM.aislesMaster;
+            _minShelfStockAccepted = gM.minShelfStockAcceptable;
 
             //random generation
-            lastCheckedAisleNumber = Random.Range(-1, aisles.Length - 2);
-            lastCheckedItem = aisles[lastCheckedAisleNumber + 1].itemsOnShelf[Random.Range(0, aisles[lastCheckedAisleNumber + 1].itemsOnShelf.Length)];
+            speed = Random.Range(gM.minStaffSpeed, gM.maxShoppingListSize);
 
             inventory = gameObject.GetComponent<Inventory>();
+
+            checkOuts = gM.checkOutsMaster;//not used currently
+
+            staffPaths = gM.staffPathsMaster;
+            staffPath = staffPaths[Random.Range(0, staffPaths.Length - 1)];
+
+            //add all the points from the staff path to this staff  points
+            foreach (Transform child in staffPath.transform)
+            {
+                staffPoints.Add(child.gameObject);
+            }
+
+            //count aisle check points in path
+            foreach (GameObject point in staffPoints)
+            {
+                if (point.CompareTag("AisleStart"))
+                {
+                    aisleCheckPoints.Add(point);
+                }
+            }
+
         }
 
 
+        //called upon first spawn to move staff to their starting aisle
+        public NodeVal Spawn()
+        {
+            List<GameObject> possibleStartPoints = new List<GameObject>();
 
-        //item stocked is true and foundAisle is false  and inventory is empty
+            foreach (GameObject point in staffPoints)
+            {
+
+                if (point.CompareTag("AisleStart"))
+                {
+                    possibleStartPoints.Add(point);
+                }
+            }
+
+            GameObject startPoint = possibleStartPoints[Random.Range(0, possibleStartPoints.Count - 1)];
+            currentStaffPoint = startPoint.GetComponent<PointInformation>().pointNumber;
+            targetLocation = startPoint.transform.position;
+            spawned = true;
+            foundAisle = true;
+
+            Aisle[] tmp = startPoint.gameObject.GetComponent<PointInformation>().closeAisles;
+            foreach (Aisle a in tmp)
+            {
+                closeAisles.Add(a);
+            }
+            return NodeVal.Success;
+
+        }
+
+        //moves staff towards its target location by the staffs speed
+        public NodeVal MoveTowards()
+        {
+            transform.position = Vector3.MoveTowards(transform.position, targetLocation, speed * Time.deltaTime);
+            return NodeVal.Success;
+        }
+
+        //item stocked is true and foundAisle is false and inventory is empty
         public NodeVal FindAisle()
         {
+
+            if (CheckedPoints >= aisleCheckPoints.Count)
+            {
+                if (!firstCheck)
+                {
+                    CheckedPoints = 0;
+                    firstCheck = true;
+                    return NodeVal.Success;
+                }
+                //else
+                CheckedPoints = 0;
+                allItemsStocked = true; //will use on later iteration of game to incoporate a cashier function
+                firstCheck = false;
+                return NodeVal.Success;
+            }
+            //set target location to next spot
+            if (currentStaffPoint + 1 >= staffPoints.Count)
+            {
+                currentStaffPoint = -1;
+            }
+            targetLocation = staffPoints[currentStaffPoint + 1].gameObject.transform.position;
+            currentStaffPoint += 1;
+
+            //if the next spot is the one you want, set variables
+            if (staffPoints[currentStaffPoint].gameObject.CompareTag("AisleStart"))
+            {
+                //doneWithCurrentAisle = false;
+                foundAisle = true;
+
+                Aisle[] tmp = staffPoints[currentStaffPoint].gameObject.GetComponent<PointInformation>().closeAisles;
+                foreach (Aisle a in tmp)
+                {
+                    closeAisles.Add(a);
+                }
+            }
+
+            return NodeVal.Success;
+
+            //old code
+            /*
             //if youve checked all the aisles then the first check is done
             if (AislesChecked > aisles.Length)
             {
@@ -74,69 +187,198 @@ namespace instinctai.usr.behaviours
             foundAisle = true;
 
             return NodeVal.Success;
+            */
 
         }
 
-        //item stocked is true and foundAisle is true and first check is false and you are close enough to the check spot and inventory is empty
+        //item stocked is true and foundAisle is true and first check is false and inventory is empty
         public NodeVal checkItemFirst()
         {
-            for (int i = 0; i < targetAisle.itemsOnShelf.Length; i++)
+            foreach(Aisle a in closeAisles)
             {
-                //set item you are checking
-                GroceryItem checkingItem = targetAisle.itemsOnShelf[i];
-                Stock itemShelf = checkingItem.Shelf;
-                if (itemShelf.currentStock < minShelfValue)
+                for (int i = 0; i < a.itemsOnShelf.Length; i++)
                 {
-                    //found an item that needs to be stocked
-                    AislesChecked = 0;
-                    itemStocked = false;
-                    targetGrocery = checkingItem;
-                    targetLocation = targetGrocery.Supply.accessSpot.transform.position;
-                    return NodeVal.Success;
+                    //set item you are checking
+                    GroceryItem checkingItem = a.itemsOnShelf[i];
+                    Stock itemShelf = checkingItem.Shelf;
+                    if (itemShelf.currentStock < _minShelfStockAccepted)
+                    {
+                        //found an item that needs to be stocked
+                        //AislesChecked = 0;
+                        itemStocked = false;
+                        targetGrocery = checkingItem;
+                        targetStock = targetGrocery.Supply;
+                        movingToStockRoom = true;
+                        return NodeVal.Success;
+                    }
                 }
             }
 
-            //aisle is minimally stocked, check next one
+
+            //both aisles are minimally stocked, check next one
+            CheckedPoints += 1;
             foundAisle = false;
-            AislesChecked += 1;
-            lastCheckedAisleNumber += 1;
             return NodeVal.Success;
         }
 
-        //item stocked is false and inventory is empty and you are close tnoought to the supply access point 
+        //item stocked is true and aisle found false is true and first check is true
+        public NodeVal checkItemSecond()
+        {
+            foreach (Aisle a in closeAisles)
+            {
+                for (int i = 0; i < a.itemsOnShelf.Length; i++)
+                {
+                    //set item you are checking
+                    GroceryItem checkingItem = a.itemsOnShelf[i];
+                    Stock itemShelf = checkingItem.Shelf;
+                    if (itemShelf.currentStock < itemShelf.stockMaxSize) //this is the difference between check first and check second
+                    {
+                        //found an item that needs to be stocked
+                        //AislesChecked = 0;
+                        itemStocked = false;
+                        targetGrocery = checkingItem;
+                        targetStock = targetGrocery.Supply;
+                        movingToStockRoom = true;
+                        return NodeVal.Success;
+                    }
+                }
+            }
+
+
+            //both aisles are max stocked, check next one
+            CheckedPoints += 1;
+            foundAisle = false;
+            return NodeVal.Success;
+        }
+
+        //found aisle is true,  moving to stock is true
+        public NodeVal MoveToStockRoom()
+        {
+            //set target location to next spot
+            if (currentStaffPoint + 1 >= staffPoints.Count)
+            {
+                currentStaffPoint = -1;
+            }
+            targetLocation = staffPoints[currentStaffPoint + 1].gameObject.transform.position;
+            currentStaffPoint += 1;
+
+            //if the next spot is the one you want, set variables
+            if (staffPoints[currentStaffPoint].gameObject.CompareTag("Stock Access"))
+            {
+                movingToStockRoom = false;
+            }
+
+            return NodeVal.Success;
+        }
+
+        //found aisle it true, item stocked is false, inventory is empty, moving to stock is false, at stock is false
+        public NodeVal MoveToStockLocation()
+        {
+            targetLocation = targetStock.accessSpot.position;
+            atStock = true;
+            return NodeVal.Success;
+        }
+
+
+        //item stocked is false and inventory is empty and moving to stock is false ,at stock is true
         public NodeVal getItem()
         {
-            Stock targetStock = targetGrocery.Supply;
-            targetStock.Take(minShelfValue + 2, inventory);
+            targetStock.Take(_minShelfStockAccepted + 2, inventory);
             if(inventory.currentInventory > 0)
             {
                 inventoryEmpty = false;
-                targetLocation = targetGrocery.accessSpot.transform.position;
+                movingToShelf = true;
+                targetLocation = staffPoints[currentStaffPoint].gameObject.transform.position; //go back to stock access point
+                atStock = false;
                 return NodeVal.Success;
             }
 
             print("Error: stock empty");
             itemStocked = true;
+            foundAisle = false;
             return NodeVal.Success;
         }
 
-        //item stocked is false and inventory isnt empty and found aisle is true and you are close enough to the shelf access point
+        //item stocked is false, inventory isnt empty, found aisle it true, at stock is false, movingToShelf is true
+        public NodeVal moveBackToShelf()
+        {
+            //if ur not at the start, go there
+            if (!staffPoints[currentStaffPoint].CompareTag("Start"))
+            {
+                //set target location to next spot
+                if (currentStaffPoint + 1 >= staffPoints.Count)
+                {
+                    currentStaffPoint = -1;
+                }
+                targetLocation = staffPoints[currentStaffPoint + 1].gameObject.transform.position;
+                currentStaffPoint += 1;
+
+                return NodeVal.Success;
+
+            }
+
+            //if ur not at aisle start, go there
+            if (!staffPoints[currentStaffPoint].CompareTag("AisleStart"))
+            {
+                //print(staffPoints[currentStaffPoint].tag);
+                foreach (GameObject point in staffPoints)
+                {
+                    if (point.CompareTag("AisleStart"))
+                    {
+                        //("found aisleStart");
+                        Aisle[] tmpCloseAisles = point.GetComponent<PointInformation>().closeAisles;
+                        foreach (Aisle a in tmpCloseAisles)
+                        {
+                            //print("found close aisles");
+                            GroceryItem[] tmpGroceries = a.itemsOnShelf;
+
+                            foreach (GroceryItem g in tmpGroceries)
+                            {
+                                //print("found grocery item");
+                                if (targetGrocery.Equals(g))
+                                {
+                                    //print("found target grocery");
+                                    targetLocation = point.transform.position;
+                                    currentStaffPoint += 1;
+                                    return NodeVal.Success;
+                                }
+                            }
+
+                            
+                        }
+                    }
+                }
+
+                return NodeVal.Fail;
+            }
+
+            targetLocation = targetGrocery.Shelf.accessSpot.position;
+            movingToShelf = false;
+            return NodeVal.Success;
+        }
+
+        //item stocked is false and inventory isnt empty and found aisle is true and moving to shelf is false
         public NodeVal stockItem()
         {
             Stock targetSupply = targetGrocery.Shelf;
             targetSupply.AddMore(inventory.currentInventory, inventory);
             itemStocked = true;
-            foundAisle = false;
+            //foundAisle = false;
 
             //check if inventory is empty
             if(inventory.currentInventory < 1)
             {
                 inventoryEmpty = true;
+                targetLocation = staffPoints[currentStaffPoint].transform.position; //move back to start of aisle
+            }
+            else
+            {
+                movingToStockRoom = true;
             }
             return NodeVal.Success;
         }
 
-        //if item stocked is true and inventory isnt empty and found aisle is false and you are close enough to the supply access point
+        //if item stocked is true and inventory isnt empty and found aisle is true and at stock is true
         public NodeVal returnStock()
         {
             Stock targetStock = targetGrocery.Supply;
@@ -151,35 +393,63 @@ namespace instinctai.usr.behaviours
             else
             {
                 print("Stock Full: Cant Operate");
+                inventory.currentInventory = 0;
+                inventoryEmpty = false;
             }
 
+            movingToAisle = true;
             return NodeVal.Success;
         }
 
-        //item stocked is true and aisle found false is true and first check is true
-        public NodeVal checkItemSecond()
+        //for use after return stock, to go back and check last asile
+        //at stock is false, inventory is empty, item stocked is true, moving to asile is true
+        public NodeVal returnToAisle()
         {
-            for (int i = 0; i < targetAisle.itemsOnShelf.Length; i++)
+            //if ur not at the start, go there
+            if (!staffPoints[currentStaffPoint].CompareTag("Start"))
             {
-                //set item you are checking
-                GroceryItem checkingItem = targetAisle.itemsOnShelf[i];
-                Stock itemShelf = checkingItem.Shelf;
-                if (itemShelf.currentStock < itemShelf.stockMaxSize) //main change is here! uses stock max size instead of minShelfVlaue
+                //set target location to next spot
+                if (currentStaffPoint + 1 >= staffPoints.Count)
                 {
-                    //found an item that needs to be stocked
-                    AislesChecked = 0;
-                    itemStocked = false;
-                    targetGrocery = checkingItem;
-                    targetLocation = targetGrocery.Supply.accessSpot.transform.position;
-                    return NodeVal.Success;
+                    currentStaffPoint = -1;
                 }
+                targetLocation = staffPoints[currentStaffPoint + 1].gameObject.transform.position;
+                currentStaffPoint += 1;
+
+                return NodeVal.Success;
+
             }
 
-            //aisle is minimally stocked, check next one
-            foundAisle = false;
-            AislesChecked += 1;
-            lastCheckedAisleNumber += 1;
+            //if ur not at aisle start, go there
+            if (!staffPoints[currentStaffPoint].CompareTag("AisleStart"))
+            {
+                foreach (GameObject point in staffPoints)
+                {
+                    if (point.CompareTag("AisleStart"))
+                    {
+                        Aisle[] tmpCloseAisles = point.GetComponent<PointInformation>().closeAisles;
+                        foreach (Aisle a in tmpCloseAisles)
+                        {
+                            GroceryItem[] tmpGroceries = a.itemsOnShelf;
+
+                            foreach (GroceryItem g in tmpGroceries)
+                            {
+                                if (targetGrocery.Equals(g))
+                                {
+                                    targetLocation = point.transform.position;
+                                    movingToAisle = false;
+                                    return NodeVal.Success;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return NodeVal.Fail;
+            }
+
             return NodeVal.Success;
+
         }
     }
 }

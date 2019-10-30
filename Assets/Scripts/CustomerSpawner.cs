@@ -8,7 +8,7 @@ public class CustomerSpawner : MonoBehaviour
 
     public Transform[] spawnPoints;
 
-    public GameManger gM;
+    private GameManger gM;
     
     
     // Start is called before the first frame update

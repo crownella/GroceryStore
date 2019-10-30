@@ -18,6 +18,7 @@ TagManager:
   - Exit
   - Customer
   - Staff
+  - Stock Access
   layers:
   - Default
   - TransparentFX

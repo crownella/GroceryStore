@@ -145,7 +145,7 @@ namespace instinctai.usr.behaviours
                     case 2:
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(47, _liveHandle, NodeVal.Running, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(39, _liveHandle, NodeVal.Running, false, false);
                         #endif
                         n2c = 11;
                         node = 11;
@@ -162,7 +162,7 @@ namespace instinctai.usr.behaviours
                             ret = n2_1r;
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(47, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(39, _liveHandle, ret, false, false);
                         #endif
 
                         }
@@ -245,7 +245,7 @@ namespace instinctai.usr.behaviours
                     case 6:
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(39, _liveHandle, NodeVal.Running, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(46, _liveHandle, NodeVal.Running, false, false);
                         #endif
                         n6c = 44;
                         node = 44;
@@ -262,7 +262,7 @@ namespace instinctai.usr.behaviours
                             ret = n6_1r;
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(39, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(46, _liveHandle, ret, false, false);
                         #endif
 
                         }
@@ -270,7 +270,7 @@ namespace instinctai.usr.behaviours
                     case 7:
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(41, _liveHandle, NodeVal.Running, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(43, _liveHandle, NodeVal.Running, false, false);
                         #endif
                         n7c = 47;
                         node = 47;
@@ -287,7 +287,7 @@ namespace instinctai.usr.behaviours
                             ret = n7_1r;
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(41, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(43, _liveHandle, ret, false, false);
                         #endif
 
                         }
@@ -350,7 +350,7 @@ namespace instinctai.usr.behaviours
 
                         ret = ((transform.position - (this.targetLocation).position).sqrMagnitude >= (1f))? NodeVal.Success : NodeVal.Fail;
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(49, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(41, _liveHandle, ret, false, false);
                         #endif
                         node = 51;
                         break;
@@ -363,7 +363,7 @@ namespace instinctai.usr.behaviours
                             if (ret == NodeVal.Running) {
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(48, _liveHandle, NodeVal.Running, true, false);
+                            if (_live != null) _live = _live.SetLiveValue(40, _liveHandle, NodeVal.Running, true, false);
                         #endif
                                 yield return null;
                             } else {
@@ -373,7 +373,7 @@ namespace instinctai.usr.behaviours
                         } while (true);
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(48, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(40, _liveHandle, ret, false, false);
                         #endif
 
                         break;
@@ -729,7 +729,7 @@ namespace instinctai.usr.behaviours
 
                         ret = (this.shoppingDone)? NodeVal.Success : NodeVal.Fail;
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(45, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(37, _liveHandle, ret, false, false);
                         #endif
                         node = 53;
                         break;
@@ -737,7 +737,7 @@ namespace instinctai.usr.behaviours
 
                         ret = (!this.readyToCheckOut)? NodeVal.Success : NodeVal.Fail;
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(46, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(38, _liveHandle, ret, false, false);
                         #endif
                         node = 53;
                         break;
@@ -750,7 +750,7 @@ namespace instinctai.usr.behaviours
                             if (ret == NodeVal.Running) {
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(44, _liveHandle, NodeVal.Running, true, false);
+                            if (_live != null) _live = _live.SetLiveValue(36, _liveHandle, NodeVal.Running, true, false);
                         #endif
                                 yield return null;
                             } else {
@@ -760,7 +760,7 @@ namespace instinctai.usr.behaviours
                         } while (true);
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(44, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(36, _liveHandle, ret, false, false);
                         #endif
 
                         break;
@@ -768,7 +768,7 @@ namespace instinctai.usr.behaviours
 
                         ret = (this.readyToCheckOut)? NodeVal.Success : NodeVal.Fail;
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(34, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(42, _liveHandle, ret, false, false);
                         #endif
                         node = 54;
                         break;
@@ -776,7 +776,7 @@ namespace instinctai.usr.behaviours
 
                         ret = (!this.doneCheckingOut)? NodeVal.Success : NodeVal.Fail;
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(35, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(34, _liveHandle, ret, false, false);
                         #endif
                         node = 54;
                         break;
@@ -789,7 +789,7 @@ namespace instinctai.usr.behaviours
                             if (ret == NodeVal.Running) {
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(36, _liveHandle, NodeVal.Running, true, false);
+                            if (_live != null) _live = _live.SetLiveValue(35, _liveHandle, NodeVal.Running, true, false);
                         #endif
                                 yield return null;
                             } else {
@@ -799,7 +799,7 @@ namespace instinctai.usr.behaviours
                         } while (true);
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(36, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(35, _liveHandle, ret, false, false);
                         #endif
 
                         break;
@@ -807,7 +807,7 @@ namespace instinctai.usr.behaviours
 
                         ret = (this.doneCheckingOut)? NodeVal.Success : NodeVal.Fail;
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(37, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(48, _liveHandle, ret, false, false);
                         #endif
                         node = 55;
                         break;
@@ -815,7 +815,7 @@ namespace instinctai.usr.behaviours
 
                         ret = (!this.gone)? NodeVal.Success : NodeVal.Fail;
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(43, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(47, _liveHandle, ret, false, false);
                         #endif
                         node = 55;
                         break;
@@ -828,7 +828,7 @@ namespace instinctai.usr.behaviours
                             if (ret == NodeVal.Running) {
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(38, _liveHandle, NodeVal.Running, true, false);
+                            if (_live != null) _live = _live.SetLiveValue(49, _liveHandle, NodeVal.Running, true, false);
                         #endif
                                 yield return null;
                             } else {
@@ -838,7 +838,7 @@ namespace instinctai.usr.behaviours
                         } while (true);
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(38, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(49, _liveHandle, ret, false, false);
                         #endif
 
                         break;
@@ -846,7 +846,7 @@ namespace instinctai.usr.behaviours
 
                         ret = (this.gone)? NodeVal.Success : NodeVal.Fail;
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(42, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(45, _liveHandle, ret, false, false);
                         #endif
                         node = 56;
                         break;
@@ -859,7 +859,7 @@ namespace instinctai.usr.behaviours
                             if (ret == NodeVal.Running) {
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(40, _liveHandle, NodeVal.Running, true, false);
+                            if (_live != null) _live = _live.SetLiveValue(44, _liveHandle, NodeVal.Running, true, false);
                         #endif
                                 yield return null;
                             } else {
@@ -869,7 +869,7 @@ namespace instinctai.usr.behaviours
                         } while (true);
 
                         #if UNITY_EDITOR
-                            if (_live != null) _live = _live.SetLiveValue(40, _liveHandle, ret, false, false);
+                            if (_live != null) _live = _live.SetLiveValue(44, _liveHandle, ret, false, false);
                         #endif
 
                         break;

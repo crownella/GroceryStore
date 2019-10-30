@@ -12,6 +12,7 @@ namespace instinctai.usr.behaviours
     using UnityEngine;
     using com.kupio.instinctai;
     using System.Collections.Generic;
+    using System.Collections;
 
     public partial class Customer : MonoBehaviour
     {
@@ -50,10 +51,17 @@ namespace instinctai.usr.behaviours
         //check out
         CheckOut currentCheckOut;
 
+        //reaction sprites
+        public SpriteRenderer reactionSprite;
+        public Sprite happy;
+        public Sprite sad;
+        GameManger gM;
+
 
         void Awake()
         {
-            GameManger gM = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManger>();
+            reactionSprite.enabled = false;
+            gM = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManger>();
             groceryItems = gM.groceryItemsMaster;
             shoppingPaths = gM.shoppingPathsMaster;
             checkOuts = gM.checkOutsMaster;
@@ -273,7 +281,7 @@ namespace instinctai.usr.behaviours
             if (!successful)
             {
                 //customer is mad, show emotiocon
-                print("Im Mad");
+                StartCoroutine(SadReaction());
 
             }
 
@@ -304,6 +312,7 @@ namespace instinctai.usr.behaviours
                 if (!currentCheckOut.Push(gameObject))
                 {
                     print("I Cant Check Out");
+                    StartCoroutine(SadReaction());
                     doneCheckingOut = true;
                     
                 }
@@ -321,7 +330,8 @@ namespace instinctai.usr.behaviours
             {
                 if (cart.boughtAllItems)
                 {
-                    print("Finished Checking out");
+                    //print("Finished Checking out");
+                    StartCoroutine(HappyReaction());
                     doneCheckingOut = true;
                     return NodeVal.Success;
                 }
@@ -346,6 +356,25 @@ namespace instinctai.usr.behaviours
             Destroy(this.gameObject);
             return NodeVal.Success;
         }
+
+        IEnumerator HappyReaction()
+        {
+            reactionSprite.enabled = true;
+            reactionSprite.sprite = happy;
+            gM.score += gM.scoreIncrease;
+            yield return new WaitForSeconds(3f);
+            reactionSprite.enabled = false;
+        }
+
+        IEnumerator SadReaction()
+        {
+            reactionSprite.enabled = true;
+            reactionSprite.sprite = sad;
+            gM.score -= gM.scoreDecrease;
+            yield return new WaitForSeconds(3f);
+            reactionSprite.enabled = false;
+        }
+
 
     } 
 }

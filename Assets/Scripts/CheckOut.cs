@@ -27,7 +27,7 @@ public class CheckOut : MonoBehaviour
         {
             if (Top())
             {
-                print("Take Next Customer " + Customers.Count);
+               // print("Take Next Customer " + Customers.Count);
                 Occupied = true;
                 StartCoroutine(CheckOutCart(Peek()));
             }
@@ -44,7 +44,7 @@ public class CheckOut : MonoBehaviour
 
         yield return new WaitForSeconds(CustomerCart.itemInCart.Count * _checkOutTimeMultiplier);
 
-        print("Done Checking out " + Customers.Count);
+        //print("Done Checking out " + Customers.Count);
         CustomerCart.positionInQueue = -1;
         CustomerCart.boughtAllItems = true;
         Occupied = false;
@@ -60,7 +60,7 @@ public class CheckOut : MonoBehaviour
         {
             objectToAdd.GetComponent<Cart>().positionInQueue = Customers.Count;
             Customers.Add(objectToAdd);
-            print("Customer Added " + Customers.Count);
+           // print("Customer Added " + Customers.Count);
             return true;
         }
         
@@ -82,7 +82,7 @@ public class CheckOut : MonoBehaviour
 
 
             Customers.RemoveAt(0);
-            print("Pop " + Customers.Count);
+            //print("Pop " + Customers.Count);
 
             foreach(GameObject Customer in Customers)
             {
